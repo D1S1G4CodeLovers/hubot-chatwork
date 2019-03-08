@@ -55,6 +55,9 @@ class ChatworkStreaming extends EventEmitter
     @host = 'api.chatwork.com'
     @rate = parseInt options.apiRate, 10
 
+    @Me((error, result) =>
+        @me = result;)
+
     unless @rate > 0
       @robot.logger.error 'API rate must be greater then 0'
       process.exit 1
@@ -137,13 +140,15 @@ class ChatworkStreaming extends EventEmitter
         timeout = =>
           @Room(id).Messages().show (err, messages) =>
             for message in messages
-              @emit 'message',
-                id,
-                message.message_id,
-                message.account,
-                message.body,
-                message.send_time,
-                message.update_time
+              console.log(message);
+              if message.account.account_id != @me.account_id
+                @emit 'message',
+                  id,
+                  message.message_id,
+                  message.account,
+                  message.body,
+                  message.send_time,
+                  message.update_time
             setTimeout timeout, 1000 / (@rate / (60 * 60))
         timeout()
 
@@ -245,4 +250,3 @@ class ChatworkStreaming extends EventEmitter
       logger.error "Chatwork request error: #{err}"
       if callback
         callback err, {}
-
